@@ -1,3 +1,4 @@
 .composer
+logs
 vendor
 workspace.code-workspace

@@ -1,5 +1,7 @@
 <?php
 use DI\Container;
+use Illuminate\Database\Capsule\Manager;
+use Illuminate\Database\Eloquenttt\Model;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -23,6 +25,23 @@ $container->set('myLogger', function () {
 
     return $logger;
 });
+$container->set('myDb', function () {
+    $db = new Manager;
+    $db->addConnection([
+        'driver' => 'mysql',
+        'host' => 'localhost',
+        'database' => 'slim_tutorial',
+        'username' => 'phpapp',
+        'password' => '8G4mr*Z-7ap.Rm@Uz-e@',
+        'charset' => 'utf8',
+        'collation' => 'utf8_unicode_ci',
+        'prefix' => ''
+    ]);
+    $db->setAsGlobal();
+    $db->bootEloquent();
+
+    return $db;
+});
 
 $app->get('/', function (Request $request, Response $response, $args) {
     if (!$this->has('myLogger')) {
@@ -35,6 +54,15 @@ $app->get('/', function (Request $request, Response $response, $args) {
     $logger->info($message);
 
     $response->getBody()->write($message);
+
+    if (!$this->has('myDb')) {
+        throw new RuntimeException('No myDb');
+    }
+
+    $db = $this->get('myDb');
+    foreach ($db::select('show databases') as $k => $v) {
+        $logger->info($v->Database);
+    }
 
     return $response;
 });

@@ -1,7 +1,5 @@
 <?php
 use DI\Container;
-use Illuminate\Database\Capsule\Manager;
-use Illuminate\Database\Eloquenttt\Model;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -17,31 +15,10 @@ $app = AppFactory::create();
 $app->add(new ContentLengthMiddleware());
 $app->addErrorMiddleware(true, true, true);
 
-$container->set('myLogger', function () {
-    $logger = new \Monolog\Logger('myLogger');
-    $logger->pushHandler(
-        new \Monolog\Handler\StreamHandler(__DIR__ . '/../logs/app.log')
-    );
-
-    return $logger;
-});
-$container->set('myDb', function () {
-    $db = new Manager;
-    $db->addConnection([
-        'driver' => 'mysql',
-        'host' => 'localhost',
-        'database' => 'slim_tutorial',
-        'username' => 'phpapp',
-        'password' => '8G4mr*Z-7ap.Rm@Uz-e@',
-        'charset' => 'utf8',
-        'collation' => 'utf8_unicode_ci',
-        'prefix' => ''
-    ]);
-    $db->setAsGlobal();
-    $db->bootEloquent();
-
-    return $db;
-});
+$logger = new My\Logger();
+$container->set('myLogger', $logger->logger);
+$db = new My\Db();
+$container->set('myDb', $db->manager);
 
 $app->get('/', function (Request $request, Response $response, $args) {
     if (!$this->has('myLogger')) {
